@@ -13,6 +13,7 @@ const bcrypt = require('bcryptjs')
 // 2. If it does, throw an error.
 // 3. If it doesn't, hash the password using bcrypt.
 const registerUser = async ({ name, email, password }) => {
+  //whitelisting the fields name, email, password to prevent mass assignment vulnerabilities
   const existingUser = await prisma.user.findUnique({ where: { email } })
   if (existingUser) throw new Error('Email already exists')
 
