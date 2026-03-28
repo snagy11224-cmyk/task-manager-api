@@ -5,7 +5,13 @@ const errorHandler = require('./middlewares/errorHandler')
 const { initSentry } = require('./utils/sentry')
 const { globalLimiter } = require('./middlewares/rateLimiter')
 
+const helmet = require('helmet')
+const mongoSanitize = require('express-mongo-sanitize')
+const xss = require('xss-clean')
+
+
 dotenv.config()
+
 const authRoutes = require('./routes/authRoutes')
 const taskRoutes = require('./routes/taskRoutes')
 
@@ -18,6 +24,13 @@ initSentry(app)
 
 // Middleware
 app.use(express.json())
+
+// Security middlewares
+app.use(helmet())
+app.use(mongoSanitize())
+app.use(xss())
+
+// Logging and rate limiting
 app.use(morgan('dev'))
 app.use(globalLimiter)
 
