@@ -1,5 +1,8 @@
 const express = require('express')
 const dotenv = require('dotenv')
+const morgan = require('morgan')
+const errorHandler = require('./middlewares/errorHandler')
+const { initSentry } = require('./utils/sentry')
 
 dotenv.config()
 const authRoutes = require('./routes/authRoutes')
@@ -8,9 +11,13 @@ const taskRoutes = require('./routes/taskRoutes')
 
 const app = express()
 
+// Sentry
+initSentry(app)
+
+
 // Middleware
 app.use(express.json())
-
+app.use(morgan('dev'))
 
 // Routes
 app.use('/api/auth', authRoutes)
@@ -20,9 +27,10 @@ app.use('/api/tasks', taskRoutes)
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' })
 })
+app.use(errorHandler)
+
 
 const PORT = process.env.PORT || 3000
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
