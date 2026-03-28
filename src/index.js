@@ -3,6 +3,7 @@ const dotenv = require('dotenv')
 const morgan = require('morgan')
 const errorHandler = require('./middlewares/errorHandler')
 const { initSentry } = require('./utils/sentry')
+const { globalLimiter } = require('./middlewares/rateLimiter')
 
 dotenv.config()
 const authRoutes = require('./routes/authRoutes')
@@ -18,6 +19,8 @@ initSentry(app)
 // Middleware
 app.use(express.json())
 app.use(morgan('dev'))
+app.use(globalLimiter)
+
 
 // Routes
 app.use('/api/auth', authRoutes)
@@ -27,6 +30,7 @@ app.use('/api/tasks', taskRoutes)
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' })
 })
+
 app.use(errorHandler)
 
 
