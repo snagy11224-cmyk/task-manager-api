@@ -52,6 +52,7 @@ const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
     req.userId = decoded.userId
+    req.userRole = decoded.role
     req.token = token
     next()
   } catch (error) {
@@ -59,4 +60,12 @@ const protect = async (req, res, next) => {
   }
 }
 
-module.exports = { validateRegister, validateLogin , protect }
+// Middleware to restrict access to admin-only routes
+const requireAdmin = (req, res, next) => {
+  if (req.userRole !== 'ADMIN') {
+    return res.status(403).json({ message: 'Access denied, admins only' })
+  }
+  next()
+}
+
+module.exports = { validateRegister, validateLogin, protect, requireAdmin }

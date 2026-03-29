@@ -17,8 +17,8 @@ const createTask = async (data, userId) => {
 
 // 1. Retrieve tasks from the database that belong to the specified userId, and optionally filter by status and priority if provided in the query parameters.
 // 2. Return the list of tasks sorted by creation date in descending order.
-const getTasks = async (userId, { status, priority, page = 1, limit = 10 }) => {
-  const where = { userId }
+const getTasks = async (userId,userRole, { status, priority, page = 1, limit = 10 }) => {
+const where = userRole === 'ADMIN' ? {} : { userId }  // admin sees all tasks
   if (status) where.status = status
   if (priority) where.priority = priority
 
@@ -69,8 +69,8 @@ const updateTask = async (id, userId, data) => {
 // 2. If the task does not exist, throw an error.
 // 3. If the task exists but does not belong to the specified userId, throw an error.
 // 4. If the task exists and belongs to the specified userId, delete the task and return a success message.
-const deleteTask = async (id, userId) => {
-  await getTaskById(id, userId)
+const deleteTask = async (id, userId, userRole) => {
+  if (userRole !== 'ADMIN') await getTaskById(id, userId)  // only check ownership for non-admins
   return await prisma.task.delete({ where: { id } })
 }
 
