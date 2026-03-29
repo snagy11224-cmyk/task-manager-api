@@ -17,12 +17,32 @@ const createTask = async (data, userId) => {
 
 // 1. Retrieve tasks from the database that belong to the specified userId, and optionally filter by status and priority if provided in the query parameters.
 // 2. Return the list of tasks sorted by creation date in descending order.
-const getTasks = async (userId, { status, priority }) => {
+const getTasks = async (userId, { status, priority, page = 1, limit = 10 }) => {
   const where = { userId }
   if (status) where.status = status
   if (priority) where.priority = priority
 
-  return await prisma.task.findMany({ where, orderBy: { createdAt: 'desc' } })
+  const skip = (page - 1) * limit
+
+  const [tasks, total] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: Number(skip),
+      take: Number(limit)
+    }),
+    prisma.task.count({ where })
+  ])
+
+  return {
+    data: tasks,
+    pagination: {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / limit)
+    }
+  }
 }
 
 // 1. Retrieve a task by its ID from the database.
