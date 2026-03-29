@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const { registerUser, loginUser } = require('../services/authService')
+const { registerUser, loginUser, blacklistToken  } = require('../services/authService')
 
 // Controller functions for user registration 
 // 1. Call the registerUser service function with the request body.
@@ -34,4 +34,13 @@ const login = async (req, res) => {
   }
 }
 
-module.exports = { register, login }
+const logout = async (req, res) => {
+  try {
+    await blacklistToken(req.token)
+    res.json({ message: 'Logged out successfully' })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+module.exports = { register, login , logout }

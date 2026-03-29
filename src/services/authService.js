@@ -43,4 +43,19 @@ const loginUser = async ({ email, password }) => {
   return { id: user.id, name: user.name, email: user.email }
 }
 
-module.exports = { registerUser, loginUser }
+
+//------------------ Logout ------
+//1. Add the provided token to a blacklist in the database to invalidate it for future use.
+//2. Check if a given token is in the blacklist to determine if it has been invalidated.
+const blacklistToken = async (token) => {
+  await prisma.blacklistedToken.create({ data: { token } })
+}
+
+//1. Check if a given token is in the blacklist to determine if it has been invalidated.  
+//2. Return true if the token is blacklisted, or false if it is not.
+const isTokenBlacklisted = async (token) => {
+  const found = await prisma.blacklistedToken.findUnique({ where: { token } })
+  return !!found
+}
+
+module.exports = { registerUser, loginUser, blacklistToken, isTokenBlacklisted }
