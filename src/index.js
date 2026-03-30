@@ -4,12 +4,15 @@ const morgan = require('morgan')
 const errorHandler = require('./middlewares/errorHandler')
 const { initSentry } = require('./utils/sentry')
 const { globalLimiter } = require('./middlewares/rateLimiter')
+const { connectDB } = require('./config/database')
 
 const helmet = require('helmet')
 
 
 
 dotenv.config()
+
+connectDB()
 
 const authRoutes = require('./routes/authRoutes')
 const taskRoutes = require('./routes/taskRoutes')
