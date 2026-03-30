@@ -7,11 +7,9 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 const bcrypt = require('bcryptjs')
+const crypto = require('crypto')
 
-// Service function for user registration  
-// 1. Check if the email already exists in the database.
-// 2. If it does, throw an error.
-// 3. If it doesn't, hash the password using bcrypt.
+// Service function for user registration
 const registerUser = async ({ name, email, password }) => {
   //whitelisting the fields name, email, password to prevent mass assignment vulnerabilities
   const existingUser = await prisma.user.findUnique({ where: { email } })
@@ -30,10 +28,6 @@ const registerUser = async ({ name, email, password }) => {
 }
 
 // Service function for user login
-// 1. Find the user by email in the database, If not found, throw an error.
-// 3. If the user is found, compare the provided password with the hashed password stored in the database using bcrypt.
-// 4. If the passwords do not match, throw an error.
-// 5. If the passwords match, return the user object (excluding the password).
 const loginUser = async ({ email, password }) => {
   const user = await prisma.user.findUnique({ where: { email } })
   if (!user) throw new Error('Invalid credentials')
@@ -45,17 +39,54 @@ const loginUser = async ({ email, password }) => {
 
 
 //------------------ Logout ------
-//1. Add the provided token to a blacklist in the database to invalidate it for future use.
-//2. Check if a given token is in the blacklist to determine if it has been invalidated.
 const blacklistToken = async (token) => {
   await prisma.blacklistedToken.create({ data: { token } })
 }
-
-//1. Check if a given token is in the blacklist to determine if it has been invalidated.  
-//2. Return true if the token is blacklisted, or false if it is not.
+// Service function to check if a token is blacklisted
 const isTokenBlacklisted = async (token) => {
   const found = await prisma.blacklistedToken.findUnique({ where: { token } })
   return !!found
 }
 
-module.exports = { registerUser, loginUser, blacklistToken, isTokenBlacklisted }
+//------------------- Forgot Password & Reset Password ------
+const forgotPassword = async (email) => {
+  const user = await prisma.user.findUnique({ where: { email } })
+  if (!user) throw new Error('No user found with this email')
+  // Generate reset token
+  const resetToken = crypto.randomBytes(32).toString('hex')
+  const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+  // Save to DB
+  await prisma.user.update({
+    where: { email },
+    data: { resetToken, resetTokenExpiry }
+  })
+
+  return { resetToken, user }
+}
+
+const resetPassword = async (token, newPassword) => {
+  // Find user with valid token
+  const user = await prisma.user.findFirst({
+    where: {
+      resetToken: token,
+      resetTokenExpiry: { gt: new Date() } // token not expired
+    }
+  })
+
+  if (!user) throw new Error('Invalid or expired reset token')
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10)
+  // Update password + clear token
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: hashedPassword,
+      resetToken: null,
+      resetTokenExpiry: null
+    }
+  })
+
+  return { message: 'Password reset successfully' }
+}
+
+module.exports = { registerUser, loginUser, blacklistToken, isTokenBlacklisted, forgotPassword, resetPassword }

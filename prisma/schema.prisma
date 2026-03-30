@@ -20,6 +20,9 @@ model User {
   createdAt DateTime @default(now())
   tasks     Task[]
   role      Role     @default(USER)
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+
 }
 
 model Task {
