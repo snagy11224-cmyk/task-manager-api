@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch"
   },
   "keywords": [],
   "author": "",
@@ -34,5 +36,10 @@
   "devDependencies": {
     "nodemon": "^3.1.14",
     "prisma": "^7.5.0"
-  }
+  },
+  "jest": {
+  "testEnvironment": "node",
+  "forceExit": true,
+  "clearMocks": true
+}
 }
