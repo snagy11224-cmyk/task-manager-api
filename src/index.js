@@ -8,6 +8,7 @@ const { globalLimiter } = require('./middlewares/rateLimiter')
 const helmet = require('helmet')
 
 
+
 dotenv.config()
 
 const authRoutes = require('./routes/authRoutes')
@@ -42,6 +43,8 @@ app.get('/health', (req, res) => {
 
 app.use(errorHandler)
 
+// Start email worker
+require('./queues/emailWorker')
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
