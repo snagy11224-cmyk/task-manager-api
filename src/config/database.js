@@ -1,3 +1,4 @@
+console.log('USING NEW DATABASE CONFIG');
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
 
