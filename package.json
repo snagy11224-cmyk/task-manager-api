@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "npx prisma generate && node src/index.js",
+    "start": "npx prisma generate && npm start",
     "postinstall": "prisma generate",
     "test": "jest --runInBand",
     "test:watch": "jest --watch"
