@@ -1,8 +1,7 @@
 const { Queue } = require('bullmq')
 
 const connection = {
-  host: 'localhost',
-  port: 6379
+   url: process.env.REDIS_URL
 }
 
 const emailQueue = new Queue('email', { connection })
