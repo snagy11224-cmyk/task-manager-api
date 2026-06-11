@@ -38,10 +38,3 @@ It demonstrates core backend development skills such as REST API design, routing
 - Database integration
 - Modular project structure
 
-## Project Structure
-
-```txt
-src/
-package.json
-Dockerfile
-Procfile
